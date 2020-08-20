@@ -16,35 +16,94 @@ namespace SDATests.Controllers
 
         }
 
-        
 
+
+        /// 🔽 POST: Проверяет ответ и возвращает результат + ID следующего
         [HttpPost]
-        public IActionResult CheckAnswer([FromBody] UserAnswerDto userAnswer)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CheckAnswer([FromBody] SubmitAnswerDto dto)
         {
-            var question = questionRepository.TryGetById(userAnswer.QuestionId);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            var correctAnswer = question.Answers.First(x => x.IsRight);
+            // 1. Проверяем существование выбранного ответа
+            var question = questionRepository.TryGetById(dto.QuestionId);
+            var selectedAnswer = question?.Answers?.FirstOrDefault(a => a.Id == dto.SelectedAnswerId);
 
-            bool isCorrect = correctAnswer.Id == userAnswer.AnswerId;
+            if (selectedAnswer == null)
+                return BadRequest("Неверный ID вопроса или варианта ответа");
 
+            // 2. Находим правильный ответ
+            var correctAnswer = question?.Answers?.FirstOrDefault(a => a.IsRight);
+
+            bool isCorrect = correctAnswer != null && selectedAnswer.Id == correctAnswer.Id;
+
+            // 3. Ищем следующий вопрос в билете
+            var ticket = ticketRepository.TryGetById(dto.TicketId);
+            var nextTicketQuestion = ticket.TicketQuestions.FirstOrDefault(x => x.OrderIndex == dto.CurrentOrder + 1);
+
+            // 4. Возвращаем результат
             return Ok(new
             {
-                isCorrect,
-                correctAnswerId = correctAnswer.Id,
-                explanation = question.Explanation
+                isCorrect = isCorrect,
+                correctAnswerId = correctAnswer?.Id,
+                explanation = isCorrect ? null : selectedAnswer.Question?.Explanation,
+                nextQuestionId = nextTicketQuestion?.QuestionId
             });
         }
 
+
         [HttpGet]
-        public IActionResult GetQuestion(Guid ticketId, int index)
+        public async Task<IActionResult> GetQuestion([FromQuery] Guid ticketId, [FromQuery] int index)
         {
             var ticket = ticketRepository.TryGetById(ticketId);
-            var question = ticket?.TicketQuestions[index];
 
-            return PartialView("_QuestionCard", question);
+            if (ticket?.TicketQuestions == null || index < 0 || index >= ticket.TicketQuestions.Count)
+                return NotFound("Вопрос не найден");
+
+            var ticketQuestion = ticket.TicketQuestions.OrderBy(tq => tq.OrderIndex).ElementAt(index);
+            var question = ticketQuestion.Question;
+
+            // 🔒 Возвращаем ответы БЕЗ флага IsCorrect!
+            var viewModel = new QuestionViewModel
+            {
+                Id = question.Id,
+                Text = question.Text,
+                Image = question.Image,
+                Explanation = question.Explanation,
+                Answers = question.Answers
+                    .Select(a => new AnswerViewModel { Id = a.Id, Text = a.Text })
+                    .OrderBy(_ => Guid.NewGuid()) // Перемешиваем варианты
+                    .ToList()
+            };
+
+            return PartialView("_QuestionCard", viewModel);
+
         }
 
-       
+        /// 🔽 POST: Завершение теста (опционально)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult SubmitTest([FromBody] SubmitTestDto dto)
+        {
+            // Здесь логика сохранения результатов, подсчёта баллов и т.д.
+            // ...
 
+            return Ok(new { success = true, resultsUrl = $"/Test/Results?ticketId={dto.TicketId}" });
+        }
+    }
+
+    public record SubmitAnswerDto
+    {
+        public Guid TicketId { get; init; }
+        public Guid QuestionId { get; init; }
+        public Guid SelectedAnswerId { get; init; }
+        public int CurrentOrder { get; init; }
+    }
+
+    public record SubmitTestDto
+    {
+        public Guid TicketId { get; init; }
+        public Dictionary<Guid, int> Answers { get; init; } = new();
     }
 }

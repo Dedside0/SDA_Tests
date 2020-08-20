@@ -14,7 +14,8 @@ namespace SDATests.Db
 
 
         public Ticket? TryGetById(Guid id) =>
-            dbContext.Tickets.Include(x => x.TicketQuestions).ThenInclude(x => x.Question).FirstOrDefault(x => x.Id == id);
+            dbContext.Tickets.Include(x => x.TicketQuestions).ThenInclude(x => x.Question).
+            ThenInclude(x => x.Answers).FirstOrDefault(x => x.Id == id);
 
 
         public void Create(Ticket ticket)

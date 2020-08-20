@@ -30,7 +30,7 @@ else
 
             <!-- Карточка вопроса -->
             <div class="card question-card shadow-sm border-0" id="question-card">
-                <partial name="_QuestionCard" model="@Model.TicketQuestions.First()" />
+                <partial name="_QuestionCard" model="@Model.TicketQuestions.First().Question" />
             </div>
         </div>
     </main>
@@ -39,85 +39,248 @@ else
 
 @section Scripts {
     <script>
-        let current_index = 0;
-        const ticketId = '@Model.Id';
+        // === Конфигурация ===
+        const CONFIG = {
+            ticketId: '@Model.Id',
+            totalQuestions: @Model.TicketQuestions.Count,
+            currentIndex: 0,
+            timeLimitSeconds: 20 * 60, 
+            autoAdvanceDelay: 1000
+        };
 
-        // загрузка вопроса
-        async function loadQuestion(ticketId, index) {
-            const response = await fetch(`/Test/GetQuestion?ticketId=${ticketId}&index=${index}`);
-            const html = await response.text();
+        let timeRemaining = CONFIG.timeLimitSeconds;
+        let timerInterval = null;
+        let isAnswered = false; 
 
-            document.getElementById("question-card").innerHTML = html;
-        }
-
-        // делегирование событий (не сломается после innerHTML)
-        document.addEventListener("click", function (e) {
-
-            const btn = e.target.closest(".answer-button");
-            if (btn) {
-                checkAnswer(btn);
-                return;
-            }
-
-            if (e.target.id === "next-btn") {
-                current_index++;
-                loadQuestion(ticketId, current_index);
-            }
-
-            if (e.target.id === "prev-btn") {
-                current_index--;
-                if (current_index < 0) current_index = 0;
-                loadQuestion(ticketId, current_index);
-            }
+        // === Инициализация при загрузке ===
+        document.addEventListener('DOMContentLoaded', () => {
+            startTimer();
+            updateNavigationButtons();
+            attachEventListeners();
         });
 
-                async function checkAnswer(button) {
+        // === Таймер ===
+        function startTimer() {
+            const timerEl = document.getElementById('timer');
+            
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                
+                // Форматируем мм:сс
+                const m = Math.floor(timeRemaining / 60);
+                const s = timeRemaining % 60;
+                timerEl.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+                
+                // Предупреждение за 5 минут (мигающий красный)
+                if (timeRemaining <= 300) {
+                    timerEl.closest('.d-flex').classList.add('text-danger');
+                    timerEl.closest('.d-flex').classList.remove('fw-bold');
+                }
+                
+                // Время вышло
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    alert('⏰ Время вышло! Тест завершается.');
+                    submitTest();
+                }
+            }, 1000);
+        }
 
-            const container = button.closest(".card-body");
+        function stopTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+        }
 
-            const questionId = container.dataset.questionId;
-            const answerId = button.dataset.answerId;
-
-            const buttons = container.querySelectorAll(".answer-button");
-            const explanation = container.querySelector("#explanation");
-
-            // блокируем сразу (чтобы не спамили)
-            buttons.forEach(b => b.disabled = true);
-
-            // запрос на сервер
-            const result = await submitAnswer(questionId, answerId);
-
-            if (result.isCorrect) {
-                button.classList.remove("btn-outline-primary");
-                button.classList.add("btn-success");
-            } else {
-                button.classList.remove("btn-outline-primary");
-                button.classList.add("btn-danger");
-
-                // подсветить правильный
-                buttons.forEach(b => {
-                    if (b.dataset.answerId == result.correctAnswerId) {
-                        b.classList.add("btn-success");
-                    }
-                });
-
-                if (explanation) {
-                    explanation.classList.remove("d-none");
-                    explanation.innerText = result.explanation;
+        // === Навигация ===
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            
+            if (prevBtn) prevBtn.disabled = (CONFIG.currentIndex === 0);
+            if (nextBtn) {
+                // Если последний вопрос — кнопка "Завершить"
+                if (CONFIG.currentIndex >= CONFIG.totalQuestions - 1) {
+                    nextBtn.innerHTML = '🏁 Завершить тест';
+                    nextBtn.dataset.action = 'finish';
+                } else {
+                    nextBtn.innerHTML = 'Далее <i class="bi bi-chevron-right ms-1"></i>';
+                    nextBtn.dataset.action = 'next';
                 }
             }
         }
 
-                async function submitAnswer(questionId, answerId) {
+        function goToQuestion(index) {
+            if (index < 0 || index >= CONFIG.totalQuestions) return;
+            
+            CONFIG.currentIndex = index;
+            isAnswered = false;
+            loadQuestion(CONFIG.ticketId, CONFIG.currentIndex);
+        }
+
+        // === Загрузка вопроса ===
+        async function loadQuestion(ticketId, index) {
+            try {
+                const response = await fetch(`/Test/GetQuestion?ticketId=${ticketId}&index=${index}`);
+                
+                if (!response.ok) throw new Error('Вопрос не найден');
+                
+                const html = await response.text();
+                document.getElementById('question-card').innerHTML = html;
+                
+                // Обновляем номер вопроса в шапке
+                document.querySelector('.badge.bg-primary').textContent = `Вопрос ${index + 1}`;
+                
+                // Обновляем прогресс-бар
+                const progress = ((index + 1) / CONFIG.totalQuestions) * 100;
+                document.querySelector('.progress-bar').style.width = `${progress}%`;
+                
+                updateNavigationButtons();
+                attachEventListeners(); // Перепривязываем события к новым кнопкам
+                
+            } catch (error) {
+                console.error('Ошибка загрузки:', error);
+                alert('Не удалось загрузить вопрос');
+            }
+        }
+
+        // === Делегирование событий (работает после innerHTML) ===
+        function attachEventListeners() {
+            const container = document.getElementById('question-card');
+            if (!container) return;
+
+            // Клик по ответу
+            container.addEventListener('click', function(e) {
+                const btn = e.target.closest('.answer-button');
+                if (btn && !isAnswered) {
+                    checkAnswer(btn);
+                }
+            });
+
+            // Кнопка "Назад"
+            const prevBtn = document.getElementById('prev-btn');
+            if (prevBtn) {
+                prevBtn.onclick = (e) => {
+                    e.preventDefault();
+                    if (CONFIG.currentIndex > 0) {
+                        goToQuestion(CONFIG.currentIndex - 1);
+                    }
+                };
+            }
+
+            // Кнопка "Далее" / "Завершить"
+            const nextBtn = document.getElementById('next-btn');
+            if (nextBtn) {
+                nextBtn.onclick = (e) => {
+                    e.preventDefault();
+                    if (nextBtn.dataset.action === 'finish') {
+                        submitTest();
+                    } else {
+                        goToQuestion(CONFIG.currentIndex + 1);
+                    }
+                };
+            }
+        }
+
+        // === Проверка ответа ===
+        async function checkAnswer(button) {
+            if (isAnswered) return;
+            isAnswered = true;
+
+            const container = button.closest('.card-body');
+            const questionId = container?.dataset.questionId;
+            const answerId = button.dataset.answerId;
+            const explanationEl = container?.querySelector('#explanation');
+            
+            // Блокируем все кнопки ответов
+            const buttons = container?.querySelectorAll('.answer-button') || [];
+            buttons.forEach(b => b.disabled = true);
+
+            // Показываем индикатор загрузки
+            button.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Проверка...';
+
+            try {
+                // 🔹 CSRF-токен (обязателен для POST в ASP.NET Core!)
+                const csrfToken = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                
+                const result = await submitAnswer(questionId, answerId, csrfToken);
+                
+                // Подсветка результата
+                if (result.isCorrect) {
+                    button.classList.remove('btn-outline-primary');
+                    button.classList.add('btn-success');
+                    button.innerHTML = '<i class="bi bi-check-lg me-1"></i>Верно!';
+                } else {
+                    button.classList.remove('btn-outline-primary');
+                    button.classList.add('btn-danger');
+                    button.innerHTML = '<i class="bi bi-x-lg me-1"></i>Ошибка';
+                    
+                    // Подсвечиваем правильный ответ
+                    buttons.forEach(b => {
+                        if (b.dataset.answerId == result.correctAnswerId) {
+                            b.classList.remove('btn-outline-primary');
+                            b.classList.add('btn-success');
+                            b.innerHTML = '<i class="bi bi-check-lg me-1"></i>' + b.textContent;
+                        }
+                    });
+                }
+                
+                // Показываем пояснение
+                if (explanationEl && result.explanation) {
+                    explanationEl.textContent = result.explanation;
+                    explanationEl.classList.remove('d-none');
+                }
+                
+                // 🔹 Автопереход если ответ правильный и не последний вопрос
+                if (result.isCorrect && CONFIG.currentIndex < CONFIG.totalQuestions - 1) {
+                    setTimeout(() => {
+                        goToQuestion(CONFIG.currentIndex + 1);
+                    }, CONFIG.autoAdvanceDelay);
+                }
+                
+            } catch (error) {
+                console.error('Ошибка проверки:', error);
+                alert('Не удалось проверить ответ');
+                isAnswered = false; // Разблокируем при ошибке
+                button.textContent = button.dataset.text || 'Ответ';
+            }
+        }
+
+        // === Отправка ответа на сервер ===
+        async function submitAnswer(questionId, answerId, csrfToken) {
             const response = await fetch('/Test/CheckAnswer', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': csrfToken || ''
                 },
-                body: JSON.stringify({ questionId, answerId })
+                body: JSON.stringify({
+                    ticketId: CONFIG.ticketId,
+                    questionId: questionId,
+                    selectedAnswerId: answerId,
+                    currentOrder: CONFIG.currentIndex + 1
+                })
             });
-
+            
+            if (!response.ok) {
+                const error = await response.text();
+                throw new Error(error || `HTTP ${response.status}`);
+            }
+            
             return await response.json();
         }
+
+        // === Завершение теста ===
+        function submitTest() {
+            stopTimer();
+            // 🔹 Здесь редирект на страницу результатов
+            window.location.href = `/Test/Results?ticketId=${CONFIG.ticketId}`;
+        }
+
+        // === Защита от случайного ухода со страницы ===
+        window.addEventListener('beforeunload', (e) => {
+            if (timeRemaining > 0 && CONFIG.currentIndex < CONFIG.totalQuestions - 1) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
     </script>
 }

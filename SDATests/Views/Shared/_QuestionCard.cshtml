@@ -1,37 +1,43 @@
-﻿@model TicketQuestionViewModel
-<div class="container py-5">
-    <div class="card shadow-sm">
-        <div class="card-body" data-question-id="@Model.Question.Id">
-            
-            <!-- Текст вопроса -->
-            <h4 class="card-title mb-4">@Model.Question.Text</h4>
+﻿@model QuestionViewModel
 
-            <!-- Картинка -->
-            <div class="text-center mb-4">
-                <img src="https://via.placeholder.com/400x200" class="img-fluid rounded" alt="question image">
-            </div>
+<div class="card-body p-4 p-md-5" data-question-id="@Model.Id">
+    
+    @* CSRF-токен для AJAX-запросов *@
+    @Html.AntiForgeryToken()
 
-            <!-- Варианты ответов (кнопки) -->
-            <div class="d-grid gap-2" id="answers">
-                @foreach(var answers in Model.Question.Answers)
-                {
-                    <button class="btn btn-outline-primary answer-button" data-answer-id="@answers.Id">@answers.Text</button>
-
-                }
-            </div>
-
-            <!-- Пояснение -->
-            <div id="explanation" class="alert alert-danger mt-3 d-none">@Model.Question.Explanation</div>
-
-            <!-- Кнопки навигации -->
-            <div class="d-flex justify-content-between mt-4">
-                <button class="btn btn-secondary">Назад</button>
-                <button class="btn btn-primary">Вперёд</button>
-            </div>
-
+    <h4 class="fw-bold mb-4">@Model.Text</h4>
+    
+    @if (!string.IsNullOrEmpty(Model.Image))
+    {
+        <div class="text-center mb-4">
+            <img src="/img/@Model.Image" class="img-fluid question-img" alt="Ситуация">
         </div>
+    }
+
+    <div class="d-grid gap-2 mb-4">
+        @foreach (var answer in Model.Answers)
+        {
+            <button type="button"
+                    class="answer-button btn btn-outline-primary w-100 text-start p-3"
+                    data-answer-id="@answer.Id">
+                @answer.Text
+            </button>
+        }
+    </div>
+
+    @* Пояснение (скрыто по умолчанию) *@
+    <div id="explanation" class="alert alert-info d-none" role="alert">
+        <i class="bi bi-lightbulb me-2"></i><span></span>
     </div>
 </div>
 
-
-
+<div class="card-footer bg-white border-top-0 p-3">
+    <div class="d-flex justify-content-between">
+        <button id="prev-btn" class="btn btn-outline-secondary px-4" @(Model?.Id == null ? "disabled" : "")>
+            <i class="bi bi-chevron-left me-1"></i> Назад
+        </button>
+        <button id="next-btn" class="btn btn-primary px-4" data-action="next">
+            Далее <i class="bi bi-chevron-right ms-1"></i>
+        </button>
+    </div>
+</div>
