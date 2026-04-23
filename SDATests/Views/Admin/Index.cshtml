@@ -1,0 +1,119 @@
+﻿@{
+    ViewData["Title"] = "Добавить вопрос";
+}
+
+<div class="container py-5" style="max-width: 800px;">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Новый вопрос ПДД</h4>
+        </div>
+        <div class="card-body p-4">
+            
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <form method="post" id="qForm">
+
+                <div class="mb-3">
+                    <label  class="form-label fw-bold">Текст вопроса</label>
+                    <textarea class="form-control" rows="3" placeholder="Пример: Разрешена ли здесь парковка?" required name="question"></textarea>
+                    <span class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Изображение</label>
+                    <input type="file" class="form-control" accept="image/jpeg, image/png, image/webp">
+                    <span class="text-danger small"></span>
+                </div>
+
+                
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Варианты ответов</label>
+
+                    <div id="answers-container" class="mb-2">
+
+                    </div>
+
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="addAnswer()">
+                        <i class="bi bi-plus-lg me-1"></i>Добавить вариант
+                    </button>
+
+                    <div class="form-text text-muted mt-1">Отметьте галочкой ровно один правильный ответ.</div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button asp-controller="Admin" asp-action="Save" type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-check-lg me-1"></i>Сохранить в БД
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">Отмена</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        let answerIndex = 0;
+
+       
+        document.addEventListener('DOMContentLoaded', () => {
+            addAnswer(); addAnswer(); addAnswer(); addAnswer();
+        });
+
+        function addAnswer() {
+            const container = document.getElementById('answers-container');
+            const html = `
+                <div class="input-group mb-2 answer-row">
+                    <input type="text" name="Answers[${answerIndex}].Text" class="form-control" placeholder="Текст варианта ответа" required>
+                    <span class="input-group-text bg-white">
+                        <div class="form-check m-0">
+                            <input type="hidden" name="Answers[${answerIndex}].IsCorrect" value="false">
+                            <input class="form-check-input answer-correct" type="checkbox" name="Answers[${answerIndex}].IsCorrect" value="true">
+                            <label class="form-check-label small mb-0">✓</label>
+                        </div>
+                    </span>
+                    <button type="button" class="btn btn-outline-danger" onclick="removeAnswer(this)">✕</button>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', html);
+            answerIndex++;
+            bindCorrectLogic();
+        }
+
+        function removeAnswer(btn) {
+            btn.closest('.answer-row').remove();
+            reindexAnswers();
+            bindCorrectLogic();
+        }
+
+        
+        function reindexAnswers() {
+            answerIndex = 0;
+            document.querySelectorAll('.answer-row').forEach(row => {
+                row.querySelector('input[type="text"]').name = `Answers[${answerIndex}].Text`;
+                row.querySelector('input[type="hidden"]').name = `Answers[${answerIndex}].IsCorrect`;
+                row.querySelector('input[type="checkbox"]').name = `Answers[${answerIndex}].IsCorrect`;
+                answerIndex++;
+            });
+        }
+
+        
+        function bindCorrectLogic() {
+            document.querySelectorAll('.answer-correct').forEach(cb => {
+                cb.onchange = function() {
+                    if(this.checked) {
+                        document.querySelectorAll('.answer-correct').forEach(c => c.checked = false);
+                        this.checked = true;
+                    }
+                };
+            });
+        }
+    </script>
+}

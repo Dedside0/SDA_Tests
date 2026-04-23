@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="SDATests.Db/SDATests.Db.csproj" Id="769f3350-2b10-4db2-962a-7b2543347575" />
+  <Project Path="SDATests/SDATests.csproj" />
+</Solution>

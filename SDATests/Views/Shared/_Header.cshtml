@@ -1,0 +1,30 @@
+﻿<nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm">
+    <div class="container">
+        <a asp-controller="Home" class="navbar-brand fw-bold">
+            <i class="bi bi-signpost-split me-2"></i>ПДД Тесты
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="mainNav">
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#hero">Главная</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#categories">Тесты</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#how-it-works">Как сдавать</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#faq">FAQ</a>
+                </li>
+                <li class="nav-item">
+                    <a asp-controller="Admin" asp-action="Index" class="nav-link">Админ</a>
+                </li>
+            </ul>
+            <a href="#categories" class="btn btn-outline-light ms-lg-3">Начать тест</a>
+        </div>
+    </div>
+</nav>
