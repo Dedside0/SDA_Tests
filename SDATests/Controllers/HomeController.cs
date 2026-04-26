@@ -1,26 +1,18 @@
 using Microsoft.AspNetCore.Mvc;
 using SDATests.Db;
 using SDATests.Models;
+using SDATests.Repositories;
 using System.Diagnostics;
 
 namespace SDATests.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController(ILogger<HomeController> _logger, QuestionRepository questionRepository) : Controller
     {
-        DataBaseContext db;
-        private readonly ILogger<HomeController> _logger;
-        public HomeController(DataBaseContext db, ILogger<HomeController> logger)
-        {
-            this.db = db;
-
-            _logger = logger;
-        }
-
 
 
         public IActionResult Index()
         {
-            return View();
+            return View(questionRepository.GetAll());
         }
 
 

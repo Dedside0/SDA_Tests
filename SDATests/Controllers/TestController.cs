@@ -1,13 +1,16 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SDATests.Models;
+using SDATests.Repositories;
 
 namespace SDATests.Controllers
 {
-    public class TestController : Controller
+    public class TestController(QuestionRepository questionRepository) : Controller
     {
         public IActionResult Index()
         {
-            return View();
+            return View(questionRepository.GetAll());
         }
+
 
     }
 }

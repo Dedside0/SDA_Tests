@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SDATests.Db;
+using SDATests.Repositories;
 
 namespace SDATests
 {
@@ -11,8 +12,10 @@ namespace SDATests
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
-            string connection = builder.Configuration.GetConnectionString("sdatests");
+            string connection = builder.Configuration.GetConnectionString("sdatests") ?? "Data Source=SDATests.db";
             builder.Services.AddDbContext<DataBaseContext>(options=> options.UseSqlite(connection));
+
+            builder.Services.AddSingleton<QuestionRepository>();
 
             var app = builder.Build();
 

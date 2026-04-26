@@ -1,17 +1,23 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SDATests.Models;
+using SDATests.Repositories;
 
 namespace SDATests.Controllers
 {
-    public class AdminController : Controller
+    public class AdminController(QuestionRepository questionRepository) : Controller
     {
         public IActionResult Index()
         {
             return View();
         }
 
-        public IActionResult Save()
+        [HttpPost]
+        public IActionResult Add(CreateQuestionViewModel question)
         {
-            return View();
+            var quest = new Question(question.QuestionText, question.Answers, question.CorrectId);
+            questionRepository.Add(quest);
+
+            return RedirectToAction("Index");
         }
 
 

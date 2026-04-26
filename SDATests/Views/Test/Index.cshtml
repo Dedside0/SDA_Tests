@@ -1,0 +1,66 @@
+﻿@model List<Question>
+
+
+<main class="flex-grow-1 py-4">
+    <div class="container" style="max-width: 850px;">
+            
+        <!-- Верхняя панель: Номер + Таймер -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <span class="badge bg-primary fs-6">Вопрос 5</span>
+                <span class="text-muted ms-2">из 20</span>
+            </div>
+            <div class="d-flex align-items-center gap-2 fw-bold text-danger">
+                <i class="bi bi-stopwatch fs-5"></i>
+                <span id="timer">18:42</span>
+            </div>
+        </div>
+
+        <!-- Прогресс-бар -->
+        <div class="progress mb-4" style="height: 6px;">
+            <div class="progress-bar bg-primary" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+
+        <!-- Карточка вопроса -->
+        <div class="card question-card shadow-sm border-0">
+            <div class="card-body p-4 p-md-5">
+                <h4 class="fw-bold mb-4">Разрешается ли Вам выполнить обгон в тоннеле?</h4>
+                    
+                <!-- Изображение -->
+                <div class="text-center mb-4">
+                    <img src="https://placehold.co/800x400/f1f3f5/495057?text=Дорожная+ситуация+(заглушка)"
+                         alt="Ситуация на дороге" class="img-fluid question-img">
+                </div>
+
+                <!-- Варианты ответов -->
+                <div class="d-grid gap-2 mb-4">
+                    @for (int i = 0; i < 4; i++)
+                    {
+                        <label class="position-relative">
+                            <input type="radio" name="answer" value="@i" class="btn-check">
+                            <span class="answer-option btn btn-outline-secondary w-100 text-start">@(i+1) @Model[i].Answers[i].Text</span>
+                        </label>
+                    }
+
+                <!-- Пояснение (скрыто, пока пользователь не ответит) -->
+                <div class="explanation-box p-3 d-none">
+                    <h6 class="fw-bold mb-1"><i class="bi bi-lightbulb-fill me-1"></i> Пояснение</h6>
+                    <p class="mb-0 small text-muted">Согласно п. 11.4 ПДД РФ, обгон запрещается в тоннелях, а также на мостах, путепроводах и эстакадах.</p>
+                </div>
+            </div>
+
+            <!-- Навигация -->
+            <div class="card-footer bg-white border-top-0 p-3">
+                <div class="d-flex justify-content-between">
+                    <button class="btn btn-outline-secondary px-4" disabled>
+                        <i class="bi bi-chevron-left me-1"></i> Назад
+                    </button>
+                    <button class="btn btn-primary px-4">
+                        Далее <i class="bi bi-chevron-right ms-1"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</main>
