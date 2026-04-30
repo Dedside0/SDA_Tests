@@ -21,9 +21,12 @@
             <form method="post" asp-controller="Admin" asp-action="Add">
 
                 <div class="mb-3">
+                    
                     <label class="form-label fw-bold">Текст вопроса</label>
                     <textarea class="form-control" rows="3" asp-for="QuestionText"></textarea>
                     <span class="text-danger small"></span>
+                    
+                    <span asp-validation-for="QuestionText"></span>
                 </div>
 
                 <div class="mb-3">
@@ -39,13 +42,10 @@
                     <div id="answers-container" class="mb-2">
                         @for (int i = 0; i < 4; i++)
                         {
+                            
+                            <span asp-validation-for="Answers[i].Value"></span>
                             <div class="input-group mb-2 answer-row">
-                                <input
-                                    type="text"
-                                    name="Answers[@i]"
-                                    class="form-control"
-                                    asp-for="Answers"
-                                    required >
+                                <input class="form-control" asp-for="Answers[i].Value">
                                 <span class="input-group-text bg-white">
                                     <div class="form-check m-0">
                                         <input class="form-check-input answer-correct"
@@ -55,7 +55,9 @@
                                         <label class="form-check-label small mb-0">✓</label>
                                     </div>
                                 </span>
+                                
                             </div>
+                            
                         }
                     </div>
 
@@ -63,7 +65,7 @@
                 </div>
 
                 <div class="d-flex gap-2">
-                    <button  type="submit" class="btn btn-primary px-4">
+                    <button type="submit" class="btn btn-primary px-4">
                         <i class="bi bi-check-lg me-1"></i>Сохранить в БД
                     </button>
                     <a asp-action="Index" class="btn btn-outline-secondary">Отмена</a>
@@ -75,51 +77,4 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    <script>
-        let answerIndex = 0;
-
-       
-        document.addEventListener('DOMContentLoaded', () => {
-            addAnswer(); addAnswer(); addAnswer(); addAnswer();
-        });
-
-        function addAnswer() {
-            const container = document.getElementById('answers-container');
-            const html = `
-               
-            `;
-            container.insertAdjacentHTML('beforeend', html);
-            answerIndex++;
-            bindCorrectLogic();
-        }
-
-        function removeAnswer(btn) {
-            btn.closest('.answer-row').remove();
-            reindexAnswers();
-            bindCorrectLogic();
-        }
-
-        
-        function reindexAnswers() {
-            answerIndex = 0;
-            document.querySelectorAll('.answer-row').forEach(row => {
-                row.querySelector('input[type="text"]').name = `Answers[${answerIndex}].Text`;
-                row.querySelector('input[type="hidden"]').name = `Answers[${answerIndex}].IsCorrect`;
-                row.querySelector('input[type="checkbox"]').name = `Answers[${answerIndex}].IsCorrect`;
-                answerIndex++;
-            });
-        }
-
-        
-        function bindCorrectLogic() {
-            document.querySelectorAll('.answer-correct').forEach(cb => {
-                cb.onchange = function() {
-                    if(this.checked) {
-                        document.querySelectorAll('.answer-correct').forEach(c => c.checked = false);
-                        this.checked = true;
-                    }
-                };
-            });
-        }
-    </script>
 }

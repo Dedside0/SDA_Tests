@@ -14,7 +14,8 @@ namespace SDATests.Controllers
         [HttpPost]
         public IActionResult Add(CreateQuestionViewModel question)
         {
-            var quest = new Question(question.QuestionText, question.Answers, question.CorrectId);
+            var listAnswers = question.Answers.Select(x => x.Value);
+            var quest = new Question(question.QuestionText, /*question.Answers*/ listAnswers, question.CorrectId);
             questionRepository.Add(quest);
 
             return RedirectToAction("Index");
