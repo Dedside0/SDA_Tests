@@ -1,4 +1,4 @@
-﻿@model CreateQuestionViewModel
+﻿@model QuestionVewModel
 @{
     ViewData["Title"] = "Добавить вопрос";
 }
@@ -23,10 +23,10 @@
                 <div class="mb-3">
                     
                     <label class="form-label fw-bold">Текст вопроса</label>
-                    <textarea class="form-control" rows="3" asp-for="QuestionText"></textarea>
+                    <textarea class="form-control" rows="3" asp-for="Text"></textarea>
                     <span class="text-danger small"></span>
                     
-                    <span asp-validation-for="QuestionText"></span>
+                    <span asp-validation-for="Text"></span>
                 </div>
 
                 <div class="mb-3">
@@ -43,14 +43,14 @@
                         @for (int i = 0; i < 4; i++)
                         {
                             
-                            <span asp-validation-for="Answers[i].Value"></span>
+                            <span asp-validation-for="Answers[i].Text"></span>
                             <div class="input-group mb-2 answer-row">
-                                <input class="form-control" asp-for="Answers[i].Value">
+                                <input class="form-control" asp-for="Answers[i].Text">
                                 <span class="input-group-text bg-white">
                                     <div class="form-check m-0">
                                         <input class="form-check-input answer-correct"
                                                type="radio"
-                                               asp-for="CorrectId"
+                                               asp-for="CorrectIndex"
                                                value="@i">
                                         <label class="form-check-label small mb-0">✓</label>
                                     </div>

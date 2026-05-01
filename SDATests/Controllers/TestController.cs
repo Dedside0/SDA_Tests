@@ -1,14 +1,18 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SDATests.Db;
 using SDATests.Models;
-using SDATests.Repositories;
 
 namespace SDATests.Controllers
 {
-    public class TestController(QuestionRepository questionRepository) : Controller
+    public class TestController(IQuestionRepository questionRepository) : Controller
     {
         public IActionResult Index()
         {
-            return View(questionRepository.GetAll());
+            Guid g = Guid.Parse("53E50F43-D3B3-4926-AA70-A4AE78679569");
+            var all = questionRepository.TryGetById(g);
+            var newAll = new List<QuestionVewModel>();
+                newAll.Add(new QuestionVewModel(all));
+            return View(newAll);
         }
 
 

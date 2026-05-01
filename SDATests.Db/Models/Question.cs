@@ -1,24 +1,24 @@
-namespace SDATests.Models
+﻿
+namespace SDATests.Db.Models
 {
-    public class Question
+    public class Question()
     {
-        public Guid Id { get; init; }
+        public Guid Id { get; set; }
         public string? Image { get; set; } = "default.png";
         public string Text { get; set; }
-        public int CorrectId { get; set; }
+        public int CorrectIndex { get; set; }
         public List<Answer> Answers { get; set; } = [];
 
-        public Answer? RightAnswer => Answers[CorrectId];
 
-        public Question(string questionText, IEnumerable<string> answers, int correctId, string? image = null)
+        public Question(string questionText, List<string> answers, int correctId, string? image = null):this()
         {
             this.Id = Guid.NewGuid();
             var allAns = new List<Answer>();
 
             var i = 0;
-            foreach (var variant in answers)
+            foreach (var asnText in answers)
             {
-                var ans = new Answer(this.Id, variant, correctId == i);
+                var ans = new Answer(this.Id, asnText, correctId == i);
                 allAns.Add(ans);
                 i++;
             }
@@ -26,8 +26,12 @@ namespace SDATests.Models
 
             this.Text = questionText;
             this.Answers = allAns;
+            this.CorrectIndex = correctId;
             Image = image ?? "default.png";
         }
 
+
     }
+
+
 }

@@ -1,6 +1,13 @@
-﻿@model List<Question>
+﻿@model List<QuestionVewModel>
 
 
+@if(Model is null)
+{
+    <span>Нету ничо</span>
+}
+else
+{
+    
 <main class="flex-grow-1 py-4">
     <div class="container" style="max-width: 850px;">
             
@@ -38,7 +45,7 @@
                     {
                         <label class="position-relative">
                             <input type="radio" name="answer" value="@i" class="btn-check">
-                            <span class="answer-option btn btn-outline-secondary w-100 text-start">@(i+1) @Model[i].Answers[i].Text</span>
+                            <span class="answer-option btn btn-outline-secondary w-100 text-start">@(i+1) @Model[0].Answers[i].Text</span>
                         </label>
                     }
 
@@ -64,3 +71,4 @@
 
     </div>
 </main>
+    }

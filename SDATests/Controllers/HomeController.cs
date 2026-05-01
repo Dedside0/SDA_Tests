@@ -1,12 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using SDATests.Db;
 using SDATests.Models;
-using SDATests.Repositories;
 using System.Diagnostics;
 
 namespace SDATests.Controllers
 {
-    public class HomeController(ILogger<HomeController> _logger, QuestionRepository questionRepository) : Controller
+    public class HomeController(ILogger<HomeController> _logger, IQuestionRepository questionRepository) : Controller
     {
 
 

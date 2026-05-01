@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SDATests.Db;
+using SDATests.Db.Models;
 using SDATests.Models;
-using SDATests.Repositories;
 
 namespace SDATests.Controllers
 {
-    public class AdminController(QuestionRepository questionRepository) : Controller
+    public class AdminController(IQuestionRepository questionRepository) : Controller
     {
         public IActionResult Index()
         {
@@ -12,10 +13,10 @@ namespace SDATests.Controllers
         }
 
         [HttpPost]
-        public IActionResult Add(CreateQuestionViewModel question)
+        public IActionResult Add(QuestionVewModel question)
         {
-            var listAnswers = question.Answers.Select(x => x.Value);
-            var quest = new Question(question.QuestionText, /*question.Answers*/ listAnswers, question.CorrectId);
+            var listAnswers = question.Answers.Select(x => x.Text).ToList();
+            var quest = new Question(question.Text, listAnswers, question.CorrectIndex);
             questionRepository.Add(quest);
 
             return RedirectToAction("Index");
