@@ -1,0 +1,44 @@
+﻿@model TicketCreateViewModel
+
+<h2>Создание билета</h2>
+
+<form asp-action="CreateTicket" method="post">
+
+    <div class="mb-3">
+        <label>Название билета</label>
+        <input asp-for="Name" class="form-control" />
+    </div>
+
+    @for (int i = 0; i < Model.Questions.Count; i++)
+    {
+        <div class="card p-3 mb-4">
+
+            <h5>Вопрос @(i + 1)</h5>
+
+            <input asp-for="Questions[i].Text"
+                   class="form-control mb-2"
+                   placeholder="Текст вопроса" />
+
+            <div class="row">
+                @for (int j = 0; j < 4; j++)
+                {
+                    <div class="col-6 mb-2">
+                        <input asp-for="Questions[i].Answers[j].Text"
+                               class="form-control"
+                               placeholder="Ответ @(j + 1)" />
+                    </div>
+                }
+            </div>
+
+            <label>Номер правильного ответа (0–3)</label>
+            <input asp-for="Questions[i].CorrectIndex"
+                   class="form-control" />
+
+        </div>
+    }
+
+    <button type="submit" class="btn btn-primary">
+        Создать билет
+    </button>
+
+</form>

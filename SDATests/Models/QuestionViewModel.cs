@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SDATests.Models
 {
-    public class QuestionVewModel()
+    public class QuestionViewModel()
     {
         public Guid Id { get; init; }
 
@@ -11,25 +11,29 @@ namespace SDATests.Models
         [Required(ErrorMessage = "Заполните это поле")]
         public string Text { get; set; }
 
-        public string? Image { get; set; } = "default.png";
-
-        public List<AnswerViewModel> Answers { get; set; } = [];
-
         [Required]
         public int CorrectIndex { get; set; }
 
+        public string Image { get; set; } = "default.png";
+        public string? Explanation { get; set; }
+
+        public List<AnswerViewModel> Answers { get; set; } = [];
+
+        //=============================================================
+
         public AnswerViewModel CorrectAnswer => Answers[CorrectIndex];
 
-
-        public QuestionVewModel(Question quest):this()
+        public QuestionViewModel(Question quest):this()
         {
             Id = quest.Id;
             Text= quest.Text;
             Image = quest.Image;
-            CorrectIndex = quest.CorrectIndex;
-            foreach (var ans in quest.Answers)
+            Explanation = quest.Explanation;
+            for (int i = 0; i < quest.Answers.Count(); i++)
             {
-                Answers.Add(new(ans));
+                Answers.Add(new(quest.Answers[i]));
+                if (quest.Answers[i].IsRight)
+                    CorrectIndex= i;
             } ;
         }
 

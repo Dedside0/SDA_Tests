@@ -6,13 +6,9 @@ using System.Threading.Tasks;
 
 namespace SDATests.Db.Models
 {
-    public class User
+    public class Ticket
     {
         public Guid Id { get; set; }
-
-        public string Name { get; set; }
-        public string Surname { get; set; }
-        public string Email { get; set; }
-        public int Age { get; set; }
+        public List<TicketQuestion> TicketQuestions { get; set; } 
     }
 }

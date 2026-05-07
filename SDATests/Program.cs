@@ -13,9 +13,9 @@ namespace SDATests
 
             string connection = builder.Configuration.GetConnectionString("sdatests") ?? "Data Source=SDATests.db";
 
-            builder.Services.AddDbContext<DataBaseContext>(options => options.UseSqlite(connection));
+            builder.Services.AddDbContext<Db.AppContext>(options => options.UseSqlite(connection));
 
-            builder.Services.AddScoped<IQuestionRepository, QuestionDataBaseRepository>();
+            builder.Services.AddRepositories();
 
             var app = builder.Build();
 

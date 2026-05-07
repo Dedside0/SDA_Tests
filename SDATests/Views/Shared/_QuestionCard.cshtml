@@ -1,0 +1,37 @@
+﻿@model TicketQuestionViewModel
+<div class="container py-5">
+    <div class="card shadow-sm">
+        <div class="card-body" data-question-id="@Model.Question.Id">
+            
+            <!-- Текст вопроса -->
+            <h4 class="card-title mb-4">@Model.Question.Text</h4>
+
+            <!-- Картинка -->
+            <div class="text-center mb-4">
+                <img src="https://via.placeholder.com/400x200" class="img-fluid rounded" alt="question image">
+            </div>
+
+            <!-- Варианты ответов (кнопки) -->
+            <div class="d-grid gap-2" id="answers">
+                @foreach(var answers in Model.Question.Answers)
+                {
+                    <button class="btn btn-outline-primary answer-button" data-answer-id="@answers.Id">@answers.Text</button>
+
+                }
+            </div>
+
+            <!-- Пояснение -->
+            <div id="explanation" class="alert alert-danger mt-3 d-none">@Model.Question.Explanation</div>
+
+            <!-- Кнопки навигации -->
+            <div class="d-flex justify-content-between mt-4">
+                <button class="btn btn-secondary">Назад</button>
+                <button class="btn btn-primary">Вперёд</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+

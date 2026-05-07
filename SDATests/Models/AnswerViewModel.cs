@@ -7,7 +7,6 @@ namespace SDATests.Models
     {
         public Guid Id { get; set; }
 
-        public Guid QuestionId { get; set; }
 
         [Required(ErrorMessage = "Заполните это поле")]
         [Display(Name = "Ответ", Prompt = "Вариант ответа")]
@@ -18,7 +17,6 @@ namespace SDATests.Models
         public AnswerViewModel(Answer ans):this()
         {
             Id = ans.Id;
-            QuestionId = ans.QuestionId;
             Text = ans.Text;
             IsRight = ans.IsRight;
             

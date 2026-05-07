@@ -1,8 +1,9 @@
-﻿using SDATests.Db.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using SDATests.Db.Models;
 
 namespace SDATests.Db
 {
-    public class QuestionDataBaseRepository(DataBaseContext dbContext) : IQuestionRepository
+    public class QuestionRepository(AppContext dbContext) : IQuestionRepository
     {
         //public List<Question> _questions = [
         //    new Question("Вопрос 1", new List<string>{"Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4"}, 1),
@@ -11,10 +12,10 @@ namespace SDATests.Db
         //    new Question("Вопрос 4", new List<string>{"Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4"}, 1),
         //    ];
 
-        public List<Question> GetAll() => dbContext.Questions.ToList();
+        public List<Question> GetAll() => dbContext.Questions.Include(x=>x.Answers).ToList();
 
 
-        public Question? TryGetById(Guid id) => dbContext.Questions.FirstOrDefault(q => q.Id == id);
+        public Question? TryGetById(Guid id) => dbContext.Questions.Include(x=>x.Answers).FirstOrDefault(q => q.Id == id);
         
 
         public void Add(Question question)
